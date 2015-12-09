@@ -10,7 +10,7 @@ There are two applications which can be run depending on the format of the websi
 (1) EmailScraper -- run with the command: mvn exec:java -Dexec.mainClass="EmailScraper" -Dexec.args="<url to search>"
 If you prefer not to see the verbose maven output use the -q option after mvn in the command.
 
-If the website you wish to search has statically defined html, the EmailScraper should be used. This application utilizes the JSoup (jsoup.org) library to connect to and parse pages of html. For a url to be included in the crawl, it must be explicity defined as an href attribute under an <a> tag in the html. Both absolute and relative urls will be processed.
+If the website you wish to search has statically defined html, the EmailScraper should be used. This application utilizes the JSoup (www.jsoup.org) library to connect to and parse pages of html. For a url to be included in the crawl, it must be explicity defined as an href attribute under an <a> tag in the html. Both absolute and relative urls will be processed.
 
 (2) WebDriverEmailScraper -- run with the command: mvn exec:java -Dexec.mainClass="WebDriverEmailScraper" -Dexec.args="<url to search>"
 If you prefer not to see the verbose maven output use the -q option after mvn in the command.
