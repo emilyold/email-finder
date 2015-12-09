@@ -1,5 +1,5 @@
 # email-finder
-Crawler to find all email addresses on a website
+Web crawler and scraper that finds all email addresses on a website
 
 This is an appache maven command line application. In order to run the application, you must have maven installed according the instructions described here: https://maven.apache.org/install.html. 
 
