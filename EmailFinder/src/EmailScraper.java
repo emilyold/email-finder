@@ -91,7 +91,6 @@ public class EmailScraper {
 			catch(IOException ioe){
 				System.out.println("Could not connect to " + currentPage.toExternalForm() +
 						". Any emails on that page will not be found. Continuing to search.");
-				ioe.printStackTrace();
 			}
 			
 		}
@@ -120,12 +119,12 @@ public class EmailScraper {
 	
 	
 	public static void main(String[] args){
-//		Validate.isTrue(args.length == 1, "usage: supply url to scrape");
-//		String url = args[0];
-//		if(!url.startsWith("https://") && !url.startsWith("http://")){
-//			url = "http://" + url;
-//		}
-		EmailScraper ef = new EmailScraper("http://palantir.com");
-		ef.startSearch();		
+		Validate.isTrue(args.length == 1, "usage: supply url to scrape");
+		String url = args[0];
+		if(!url.startsWith("https://") && !url.startsWith("http://")){
+			url = "http://" + url;
+		}
+		EmailScraper scraper = new EmailScraper(url);
+		scraper.startSearch();
 	}
 }

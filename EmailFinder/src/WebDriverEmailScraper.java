@@ -21,9 +21,9 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 public class WebDriverEmailScraper{
 	
-	URL rootUrl;
+	private URL rootUrl;
 	private HashSet<String> linksSet;
-	private  Queue<String> toVisit;
+	private Queue<String> toVisit;
 	private HashSet<String> emailSet;
 	private WebDriver driver;
 	
@@ -31,21 +31,19 @@ public class WebDriverEmailScraper{
 		linksSet = new HashSet<String>();
 		emailSet = new HashSet<String>();
 		toVisit = new LinkedList<String>();
-		driver = new FirefoxDriver();
-		driver.get(url);
+		driver = null;
 		try {
-			rootUrl = new URL(driver.getCurrentUrl());
+			rootUrl = new URL(url);
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+            System.out.println("The url provided is malformed");
 		}
 	}
 	
 	public void startSearch(){
-		//List<WebElement> elements = driver.findElements(By.xpath("//*[@href]"));
 		System.out.println("Looking for emails on " + rootUrl.toExternalForm() + "...");
-		toVisit.offer(rootUrl.getHost() + rootUrl.getPath());
-		linksSet.add(rootUrl.getHost() + rootUrl.getPath());
-		//updateQueue(elements);
+        String hostAndPath = formatUrlString(rootUrl.getHost() + rootUrl.getPath());
+		toVisit.offer(hostAndPath);
+		linksSet.add(hostAndPath);
 		findEmails();
 	}
 	
@@ -62,12 +60,8 @@ public class WebDriverEmailScraper{
 			URL absUrl;
 			try {
 				absUrl = new URL(url);
-				String hostAndPath = absUrl.getHost() + absUrl.getPath();
-				if(hostAndPath.charAt(hostAndPath.length()-1) == '/') 
-					hostAndPath = hostAndPath.substring(0, hostAndPath.length()-1);
-				hostAndPath = hostAndPath.replace("//", "/");
+				String hostAndPath = formatUrlString(absUrl.getHost() + absUrl.getPath());
 				if(absUrl.getHost().equals(rootUrl.getHost()) && !linksSet.contains(hostAndPath)){
-					System.out.println("adding " + hostAndPath);
 					toVisit.offer(hostAndPath);
 					linksSet.add(hostAndPath);
 				}
@@ -80,16 +74,21 @@ public class WebDriverEmailScraper{
 	private void findEmails(){
 		while(!toVisit.isEmpty()){
 			String currentPage = toVisit.poll();
-			System.out.println("opening " + currentPage);
 			driver = new FirefoxDriver();
-			driver.get("http://" + currentPage);
+			driver.get("https://" + currentPage);
 			List<WebElement> elements = driver.findElements(By.xpath("//*[@href]"));
-			//test!
-			driver.close();
 			updateQueue(elements);
+            driver.close();
 		}
 		printAllEmails();
 	}
+    
+    private String formatUrlString(String urlString){
+        if(urlString.endsWith("/")){
+            return urlString.substring(0, urlString.length()-1);
+        }
+        return urlString.replace("//", "/");
+    }
 	
 	private void printAllEmails(){
 		for(String e : emailSet){
@@ -98,13 +97,12 @@ public class WebDriverEmailScraper{
 	}
 	
 	public static void main(String[] args){
-//		Validate.isTrue(args.length == 1, "usage: supply url to scrape");
-//		String url = args[0];
-//		if(!url.startsWith("https://") && !url.startsWith("http://")){
-//			url = "http://" + url;
-//		}
-		WebDriverEmailScraper ef = new WebDriverEmailScraper("http://jana.com");
-		ef.startSearch();
-		//ef.test();
+		Validate.isTrue(args.length == 1, "usage: supply url to scrape");
+		String url = args[0];
+		if(!url.startsWith("https://") && !url.startsWith("http://")){
+			url = "https://" + url;
+		}
+		WebDriverEmailScraper scraper = new WebDriverEmailScraper(url);
+		scraper.startSearch();
 	}
 }
