@@ -57,6 +57,7 @@ public class EmailScraper {
 		}
 		catch(IOException ioe){
 			System.out.println("Could not connect to " + rootUrl);
+            ioe.printStackTrace();
 		}
 		crawl();
 	}
@@ -145,13 +146,4 @@ public class EmailScraper {
 			System.out.println(e);
 		}
 	}
-//	public static void main(String[] args){
-//		Validate.isTrue(args.length != 0, "usage: supply url to scrape");
-//		String url = args[0];
-//		if(!url.startsWith("https://") && !url.startsWith("http://")){
-//			url = "http://" + url;
-//		}
-//		EmailScraper scraper = new EmailScraper(url);
-//		scraper.startSearch();
-//	}
 }

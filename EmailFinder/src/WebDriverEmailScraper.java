@@ -76,6 +76,7 @@ public class WebDriverEmailScraper{
 			if(url.startsWith("/")){
 				url = driver.getCurrentUrl() + url;
 			}
+            
 			
 			URL absUrl;
 			try {
@@ -101,9 +102,10 @@ public class WebDriverEmailScraper{
 			String currentPage = toVisit.poll();
 			driver = new FirefoxDriver();
 			driver.get("https://" + currentPage);
-			List<WebElement> elements = driver.findElements(By.xpath("//*[@href]"));
+            
+			List<WebElement> elements = driver.findElements(By.cssSelector("a[href]"));
 			updateQueue(elements);
-            driver.close();
+            //driver.close();
 		}
 		printAllEmails();
 	}
@@ -133,14 +135,5 @@ public class WebDriverEmailScraper{
             System.out.println(e);
         }
     }
-    
-//	public static void main(String[] args){
-//		Validate.isTrue(args.length == 1, "usage: supply url to scrape");
-//		String url = args[0];
-//		if(!url.startsWith("https://") && !url.startsWith("http://")){
-//			url = "https://" + url;
-//		}
-//		WebDriverEmailScraper scraper = new WebDriverEmailScraper(url);
-//		scraper.startSearch();
-//	}
+
 }
