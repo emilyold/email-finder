@@ -1,3 +1,5 @@
+package emailsearch;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -19,6 +21,11 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
+/*
+ * Scrapes a website for email addresses using a 
+ * web driver. Should be used on websites with 
+ * dynamically defined html.
+ */
 public class WebDriverEmailScraper{
 	
 	private URL rootUrl;
@@ -39,23 +46,37 @@ public class WebDriverEmailScraper{
 		}
 	}
 	
+    /*
+     * Only public method. Adds the root url's
+     * information to the queue of urls to visit
+     * and set of url's seen, so that crawling can begin.
+     */
 	public void startSearch(){
 		System.out.println("Looking for emails on " + rootUrl.toExternalForm() + "...");
         String hostAndPath = formatUrlString(rootUrl.getHost() + rootUrl.getPath());
 		toVisit.offer(hostAndPath);
 		linksSet.add(hostAndPath);
-		findEmails();
+		crawl();
 	}
 	
+    /*
+     * Extracts all hrefs from each WebElement in the list provided.
+     * If an href is an email address, it gets added to the set of
+     * dicovered email addresses. If a url has not been discovered before, and if it
+     * has the same host as the root url, add it to the queue
+     * of urls to visit.
+     */
 	private void updateQueue(List<WebElement> links){
 		for(WebElement link : links){
 			String url = link.getAttribute("href");
 			if(url.contains("mailto:")){
 				emailSet.add(url.replace("mailto:", ""));
+                continue;
 			}
 			if(url.startsWith("/")){
 				url = driver.getCurrentUrl() + url;
 			}
+            
 			
 			URL absUrl;
 			try {
@@ -71,18 +92,29 @@ public class WebDriverEmailScraper{
 		}
 	}
 	
-	private void findEmails(){
+    /*
+     * Continuously connects to urls that need to be visited
+     * in a new web driver window. Extracts hrefs from the current
+     * web page and updates the queue of urls that need to be visited
+     */
+	private void crawl(){
 		while(!toVisit.isEmpty()){
 			String currentPage = toVisit.poll();
 			driver = new FirefoxDriver();
 			driver.get("https://" + currentPage);
-			List<WebElement> elements = driver.findElements(By.xpath("//*[@href]"));
+            
+			List<WebElement> elements = driver.findElements(By.cssSelector("a[href]"));
 			updateQueue(elements);
-            driver.close();
+            //driver.close();
 		}
 		printAllEmails();
 	}
     
+    /*
+     * Helper method to make sure a url's that are added
+     * to the queue or set are all formatted in the same way
+     * Assumes url string that is passed in does not have a protocol prefix.
+     */
     private String formatUrlString(String urlString){
         if(urlString.endsWith("/")){
             return urlString.substring(0, urlString.length()-1);
@@ -90,19 +122,18 @@ public class WebDriverEmailScraper{
         return urlString.replace("//", "/");
     }
 	
-	private void printAllEmails(){
-		for(String e : emailSet){
-			System.out.println(e);
-		}
-	}
-	
-	public static void main(String[] args){
-		Validate.isTrue(args.length == 1, "usage: supply url to scrape");
-		String url = args[0];
-		if(!url.startsWith("https://") && !url.startsWith("http://")){
-			url = "https://" + url;
-		}
-		WebDriverEmailScraper scraper = new WebDriverEmailScraper(url);
-		scraper.startSearch();
-	}
+    
+    /*
+     * Prints a list of discovered emails to standard out.
+     */
+    private void printAllEmails(){
+        if(emailSet.size() == 0){
+            System.out.println("No emails were found on " + rootUrl.toExternalForm());
+            return;
+        }
+        for(String e : emailSet){
+            System.out.println(e);
+        }
+    }
+
 }

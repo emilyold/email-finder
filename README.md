@@ -5,14 +5,17 @@ This is an appache maven command line application. In order to run the applicati
 
 Once maven is configured correctly, please navigate to the EmailFinder directory and compile the entire project with this command: mvn compile.
 
-There are two applications which can be run depending on the format of the website you are hoping to search...
+There are two ways the application can be run once it is compiled. Both can be run using the EmailSearchEngine class. 
 
-(1) EmailScraper -- run with the command: mvn exec:java -Dexec.mainClass="EmailScraper" -Dexec.args="<url to search>"
+(1) EmailScraper -- run with the command: mvn exec:java -Dexec.mainClass="EmailSearchEngine" -Dexec.args="[url to search]"
+
 If you prefer not to see the verbose maven output use the -q option after mvn in the command.
 
 If the website you wish to search has statically defined html, the EmailScraper should be used. This application utilizes the JSoup (www.jsoup.org) library to connect to and parse pages of html. For a url to be included in the crawl, it must be explicity defined as an href attribute under an <a> tag in the html. Both absolute and relative urls will be processed.
 
-(2) WebDriverEmailScraper -- run with the command: mvn exec:java -Dexec.mainClass="WebDriverEmailScraper" -Dexec.args="<url to search>"
+(2) WebDriverEmailScraper -- run with the command: mvn exec:java -Dexec.mainClass="EmailSearchEngine" -Dexec.args="[url to search] wd"
+
+The second argument, 'wd', indicates that you wish to run the search engine using a web driver.
 If you prefer not to see the verbose maven output use the -q option after mvn in the command.
 
 If the website you wish to search has dynamically defined html (like Jana's for example), the WebDriverEmailScraper should be used. This application utilizes the selenium library (http://www.seleniumhq.org) to use a Firefox web driver to connect to and parse web pages. You must have Firefox installed on your computer in order for this application to run. I used because it supports JavaScript processing. While the EmailScraper searches all of the text found on the website for emails, the WebDriverEmailScraper only detects emails that are defined in as href attributes with the format "mailto: <email address>". Unfortunately, in order to extract as much data as possible from each url that is crawled, a new WebDriver is created for each url.

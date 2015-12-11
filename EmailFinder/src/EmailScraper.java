@@ -1,3 +1,5 @@
+package emailsearch;
+
 import java.io.IOException;
 
 import java.net.MalformedURLException;
@@ -20,6 +22,10 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
+/*
+ * Scrapes a website for email addresses. Should be used
+ * on websites with statically defined html.
+ */
 public class EmailScraper {
 	URL rootUrl;
 	private HashSet<String> linksSet;
@@ -37,6 +43,10 @@ public class EmailScraper {
 		toVisit = new LinkedList<URL>();
 	}
 	
+    /*
+     * Only public method. Checks for emails on the
+     * root web page, and begins crawling linked pages.
+     */
 	public void startSearch(){
 		try{
 			Document doc = Jsoup.connect(rootUrl.toExternalForm()).timeout(10000).get();
@@ -47,10 +57,17 @@ public class EmailScraper {
 		}
 		catch(IOException ioe){
 			System.out.println("Could not connect to " + rootUrl);
+            ioe.printStackTrace();
 		}
-		findEmails();
+		crawl();
 	}
 	
+    /*
+     * Extracts all hrefs from the provided Document.
+     * If a url has not been discovered before, and if it 
+     * has the same host as the root url, add it to the queue
+     * of urls to visit.
+     */
 	public void updateQueue(Document doc){
 		Elements links = doc.select("a[href]");
 		for(Element link : links){
@@ -73,7 +90,12 @@ public class EmailScraper {
 		}
 	}
 	
-	public void findEmails(){
+    /*
+     * Continuously connects to urls that need to be visited,
+     * checks if the web page contains emails,
+     * and updates the queue of urls that need to be visited
+     */
+	public void crawl(){
 		while(!toVisit.isEmpty()){
 			URL currentPage = toVisit.poll();
 			try{
@@ -97,8 +119,13 @@ public class EmailScraper {
 		printAllEmails();
 	}
 	
+    /*
+     * Searches for strings in the visible text of a web page
+     * that have the format of an email address. Adds discovered emails
+     * to the set of discovered emails.
+     */
 	private void checkForEmails(Document doc){
-		Pattern pattern = Pattern.compile("[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-.]+[a-zA-Z]{2,}+");
+		Pattern pattern = Pattern.compile("[a-zA-Z0-9_.-]+@[a-zA-Z0-9-_.]+[a-zA-Z]{2,}+");
 		
 		Matcher matcher = pattern.matcher(doc.text());
 		while(matcher.find()){
@@ -107,6 +134,9 @@ public class EmailScraper {
 		}
 	}
 	
+    /*
+     * Prints a list of discovered emails to standard out.
+     */
 	private void printAllEmails(){
 		if(emailSet.size() == 0){
 			System.out.println("No emails were found on " + rootUrl.toExternalForm());
@@ -115,16 +145,5 @@ public class EmailScraper {
 		for(String e : emailSet){
 			System.out.println(e);
 		}
-	}
-	
-	
-	public static void main(String[] args){
-		Validate.isTrue(args.length == 1, "usage: supply url to scrape");
-		String url = args[0];
-		if(!url.startsWith("https://") && !url.startsWith("http://")){
-			url = "http://" + url;
-		}
-		EmailScraper scraper = new EmailScraper(url);
-		scraper.startSearch();
 	}
 }
